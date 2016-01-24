@@ -1,0 +1,453 @@
+GAS LISTING C:\Users\Dale\AppData\Local\Temp\ccg5jc7b.s 			page 1
+
+
+   1               		.file	"blink.c"
+   2               	__SREG__ = 0x3f
+   3               	__SP_H__ = 0x3e
+   4               	__SP_L__ = 0x3d
+   5               	__CCP__ = 0x34
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+   8               		.global __do_copy_data
+   9               		.global __do_clear_bss
+  10               		.text
+  11               	.Ltext0:
+  12               		.cfi_sections	.debug_frame
+  13               		.section	.text.startup,"ax",@progbits
+  14               	.global	main
+  15               		.type	main, @function
+  16               	main:
+  17               	.LFB0:
+  18               		.file 1 "blink.c"
+   1:blink.c       **** //------------------------------------------------------
+   2:blink.c       **** //------------------------------------------------------
+   3:blink.c       **** //   
+   4:blink.c       **** //  AVRLIB-DEMO
+   5:blink.c       **** //  For avrlib and Wiring development board.
+   6:blink.c       **** //  
+   7:blink.c       **** //
+   8:blink.c       **** //  File:     blink.c
+   9:blink.c       **** //  Author:   Juan Reyes    juanig-at-ccrma-stanford_edu
+  10:blink.c       **** //  Date:     June 18, 2008
+  11:blink.c       **** //
+  12:blink.c       **** //  Notes:
+  13:blink.c       **** //-----------------------------------------------------
+  14:blink.c       **** //  USING THE WIRING DEVELOPMENT BOARD, BUILT-IN LED
+  15:blink.c       **** //  IN PIN 48 PORT D SHOULD LIGHT.
+  16:blink.c       **** //
+  17:blink.c       **** //-----------------------------------------------------
+  18:blink.c       **** //  More information about Wiring board:
+  19:blink.c       **** //
+  20:blink.c       **** //  http://wiring.org.co/hardware/index.html
+  21:blink.c       **** //  
+  22:blink.c       **** //-----------------------------------------------------
+  23:blink.c       **** //  Information about functions used here and avrlib:
+  24:blink.c       **** // 
+  25:blink.c       **** //  ~/avrlib/examples/basic_io/basiciotest.c
+  26:blink.c       **** //  
+  27:blink.c       **** //  
+  28:blink.c       **** //
+  29:blink.c       **** //*********************************************************
+  30:blink.c       **** //   Description:
+  31:blink.c       **** //   ============
+  32:blink.c       **** //
+  33:blink.c       **** //   This program will cause Built-in LED to blink on/off 
+  34:blink.c       **** //   every 500ms.
+  35:blink.c       **** //
+  36:blink.c       **** //*********************************************************
+  37:blink.c       **** 
+  38:blink.c       **** 
+  39:blink.c       **** //compiler includes
+GAS LISTING C:\Users\Dale\AppData\Local\Temp\ccg5jc7b.s 			page 2
+
+
+  40:blink.c       **** #include <avr/io.h>
+  41:blink.c       **** #include <avr/interrupt.h>
+  42:blink.c       **** 
+  43:blink.c       **** //avrlib includes
+  44:blink.c       **** #include "global.h"
+  45:blink.c       **** #include "timer.h"
+  46:blink.c       **** 
+  47:blink.c       **** 
+  48:blink.c       **** int main(void)
+  49:blink.c       **** {
+  19               		.loc 1 49 0
+  20               		.cfi_startproc
+  21               	/* prologue: function */
+  22               	/* frame size = 0 */
+  23               	/* stack size = 0 */
+  24               	.L__stack_usage = 0
+  50:blink.c       **** 
+  51:blink.c       **** 	//  outb(register,byte) is a function that writes 
+  52:blink.c       ****         //  a byte to a register.
+  53:blink.c       **** 
+  54:blink.c       **** 
+  55:blink.c       ****         //  The DDRG register sets the direction of Port G.
+  56:blink.c       ****         //  PORTG is labeled PORT6 on the Wiring Board.
+  57:blink.c       ****   
+  58:blink.c       **** 	// a '1' makes the corresponding pin an OUTPUT.
+  59:blink.c       ****         // a '0' makes the corresponding pin an INPUT.
+  60:blink.c       **** 	// Ports can only be set as INPUT or OUTPUT (0x00, 0xff).
+  61:blink.c       **** 
+  62:blink.c       ****         // 0xFF is hexadecimal for binary 11111111.
+  63:blink.c       ****         // Therefore using 'outb'. all pins of PORTG 
+  64:blink.c       ****         // are set to OUTPUT as follows:
+  65:blink.c       ****         //
+  66:blink.c       ****         outb(DDRC, 0xFF);
+  25               		.loc 1 66 0
+  26 0000 8FEF      		ldi r24,lo8(-1)
+  27 0002 87B9      		out 39-32,r24
+  67:blink.c       **** 	//
+  68:blink.c       **** 	
+  69:blink.c       **** 
+  70:blink.c       ****         // Gnome calculator in Fedora can do bin-to-hex conversion.
+  71:blink.c       ****     
+  72:blink.c       ****         // The PORTG register can set the physical pins on port G high
+  73:blink.c       ****         // or low when those pins are set to be outputs using DDRG. 
+  74:blink.c       ****         // When pins are set to input, the PORTG register does something
+  75:blink.c       ****         // else that will be discussed later.
+  76:blink.c       ****         
+  77:blink.c       ****         // To turn off the LEDs we want to pull the end connected to 
+  78:blink.c       ****         // port A high (to 5V) so that there will be no voltage drop across
+  79:blink.c       ****         // the LEDs. See the schematic.
+  80:blink.c       ****         // So we "set" the low 4 bits HIGH (to 5V) of PORTG by writing 1's.
+  81:blink.c       **** 	// Remember 0xF0 is hexadecimal for binary 11110000
+  82:blink.c       **** 	
+  83:blink.c       ****         outb(PORTC, 0xF0);
+  28               		.loc 1 83 0
+  29 0004 80EF      		ldi r24,lo8(-16)
+  30 0006 88B9      		out 40-32,r24
+  84:blink.c       **** 	
+GAS LISTING C:\Users\Dale\AppData\Local\Temp\ccg5jc7b.s 			page 3
+
+
+  85:blink.c       **** 
+  86:blink.c       **** 	// initialize the timer library
+  87:blink.c       **** 	timerInit();
+  31               		.loc 1 87 0
+  32 0008 0E94 0000 		call timerInit
+  33               	.L2:
+  88:blink.c       **** 
+  89:blink.c       **** 	//loop forever
+  90:blink.c       **** 	while (1) {
+  91:blink.c       **** 	  //clear bit PG0 in the PORTG register - turn LED on
+  92:blink.c       **** 	  cbi(PORTC,PC0);
+  34               		.loc 1 92 0 discriminator 1
+  35 000c 4098      		cbi 40-32,0
+  93:blink.c       **** 	  sbi(PORTC,PC1);
+  36               		.loc 1 93 0 discriminator 1
+  37 000e 419A      		sbi 40-32,1
+  94:blink.c       **** 	  //PORTG = 0xFF;
+  95:blink.c       ****           // pause for 500ms
+  96:blink.c       **** 	  timerPause(100);
+  38               		.loc 1 96 0 discriminator 1
+  39 0010 84E6      		ldi r24,lo8(100)
+  40 0012 90E0      		ldi r25,hi8(100)
+  41 0014 0E94 0000 		call timerPause
+  97:blink.c       **** 
+  98:blink.c       **** 	  //set bit PG0 in the PORTG register - turn LED off
+  99:blink.c       **** 	  sbi(PORTC,PC0);
+  42               		.loc 1 99 0 discriminator 1
+  43 0018 409A      		sbi 40-32,0
+ 100:blink.c       **** 	  cbi(PORTC,PC1);
+  44               		.loc 1 100 0 discriminator 1
+  45 001a 4198      		cbi 40-32,1
+ 101:blink.c       **** 	  // PORTG = 0x00;
+ 102:blink.c       ****           //pause for 500ms
+ 103:blink.c       **** 	  timerPause(100);
+  46               		.loc 1 103 0 discriminator 1
+  47 001c 84E6      		ldi r24,lo8(100)
+  48 001e 90E0      		ldi r25,hi8(100)
+  49 0020 0E94 0000 		call timerPause
+  50 0024 00C0      		rjmp .L2
+  51               		.cfi_endproc
+  52               	.LFE0:
+  53               		.size	main, .-main
+  54               		.text
+  55               	.Letext0:
+  56               		.file 2 "d:\\program files (x86)\\atmel\\avr tools\\avr toolchain\\bin\\../lib/gcc/avr/4.6.2/../..
+  57               		.section	.debug_info,"",@progbits
+  58               	.Ldebug_info0:
+  59 0000 9700 0000 		.long	0x97
+  60 0004 0200      		.word	0x2
+  61 0006 0000 0000 		.long	.Ldebug_abbrev0
+  62 000a 04        		.byte	0x4
+  63 000b 01        		.uleb128 0x1
+  64 000c 0000 0000 		.long	.LASF10
+  65 0010 01        		.byte	0x1
+  66 0011 0000 0000 		.long	.LASF11
+  67 0015 0000 0000 		.long	.LASF12
+  68 0019 0000 0000 		.long	0
+GAS LISTING C:\Users\Dale\AppData\Local\Temp\ccg5jc7b.s 			page 4
+
+
+  69 001d 0000 0000 		.long	0
+  70 0021 0000 0000 		.long	.Ldebug_ranges0+0
+  71 0025 0000 0000 		.long	.Ldebug_line0
+  72 0029 02        		.uleb128 0x2
+  73 002a 01        		.byte	0x1
+  74 002b 06        		.byte	0x6
+  75 002c 0000 0000 		.long	.LASF0
+  76 0030 03        		.uleb128 0x3
+  77 0031 0000 0000 		.long	.LASF13
+  78 0035 02        		.byte	0x2
+  79 0036 7A        		.byte	0x7a
+  80 0037 3B00 0000 		.long	0x3b
+  81 003b 02        		.uleb128 0x2
+  82 003c 01        		.byte	0x1
+  83 003d 08        		.byte	0x8
+  84 003e 0000 0000 		.long	.LASF1
+  85 0042 04        		.uleb128 0x4
+  86 0043 02        		.byte	0x2
+  87 0044 05        		.byte	0x5
+  88 0045 696E 7400 		.string	"int"
+  89 0049 02        		.uleb128 0x2
+  90 004a 02        		.byte	0x2
+  91 004b 07        		.byte	0x7
+  92 004c 0000 0000 		.long	.LASF2
+  93 0050 02        		.uleb128 0x2
+  94 0051 04        		.byte	0x4
+  95 0052 05        		.byte	0x5
+  96 0053 0000 0000 		.long	.LASF3
+  97 0057 02        		.uleb128 0x2
+  98 0058 04        		.byte	0x4
+  99 0059 07        		.byte	0x7
+ 100 005a 0000 0000 		.long	.LASF4
+ 101 005e 02        		.uleb128 0x2
+ 102 005f 08        		.byte	0x8
+ 103 0060 05        		.byte	0x5
+ 104 0061 0000 0000 		.long	.LASF5
+ 105 0065 02        		.uleb128 0x2
+ 106 0066 08        		.byte	0x8
+ 107 0067 07        		.byte	0x7
+ 108 0068 0000 0000 		.long	.LASF6
+ 109 006c 02        		.uleb128 0x2
+ 110 006d 02        		.byte	0x2
+ 111 006e 07        		.byte	0x7
+ 112 006f 0000 0000 		.long	.LASF7
+ 113 0073 02        		.uleb128 0x2
+ 114 0074 02        		.byte	0x2
+ 115 0075 05        		.byte	0x5
+ 116 0076 0000 0000 		.long	.LASF8
+ 117 007a 02        		.uleb128 0x2
+ 118 007b 01        		.byte	0x1
+ 119 007c 06        		.byte	0x6
+ 120 007d 0000 0000 		.long	.LASF9
+ 121 0081 05        		.uleb128 0x5
+ 122 0082 01        		.byte	0x1
+ 123 0083 0000 0000 		.long	.LASF14
+ 124 0087 01        		.byte	0x1
+ 125 0088 30        		.byte	0x30
+GAS LISTING C:\Users\Dale\AppData\Local\Temp\ccg5jc7b.s 			page 5
+
+
+ 126 0089 01        		.byte	0x1
+ 127 008a 4200 0000 		.long	0x42
+ 128 008e 0000 0000 		.long	.LFB0
+ 129 0092 0000 0000 		.long	.LFE0
+ 130 0096 03        		.byte	0x3
+ 131 0097 92        		.byte	0x92
+ 132 0098 20        		.uleb128 0x20
+ 133 0099 03        		.sleb128 3
+ 134 009a 00        		.byte	0
+ 135               		.section	.debug_abbrev,"",@progbits
+ 136               	.Ldebug_abbrev0:
+ 137 0000 01        		.uleb128 0x1
+ 138 0001 11        		.uleb128 0x11
+ 139 0002 01        		.byte	0x1
+ 140 0003 25        		.uleb128 0x25
+ 141 0004 0E        		.uleb128 0xe
+ 142 0005 13        		.uleb128 0x13
+ 143 0006 0B        		.uleb128 0xb
+ 144 0007 03        		.uleb128 0x3
+ 145 0008 0E        		.uleb128 0xe
+ 146 0009 1B        		.uleb128 0x1b
+ 147 000a 0E        		.uleb128 0xe
+ 148 000b 11        		.uleb128 0x11
+ 149 000c 01        		.uleb128 0x1
+ 150 000d 52        		.uleb128 0x52
+ 151 000e 01        		.uleb128 0x1
+ 152 000f 55        		.uleb128 0x55
+ 153 0010 06        		.uleb128 0x6
+ 154 0011 10        		.uleb128 0x10
+ 155 0012 06        		.uleb128 0x6
+ 156 0013 00        		.byte	0
+ 157 0014 00        		.byte	0
+ 158 0015 02        		.uleb128 0x2
+ 159 0016 24        		.uleb128 0x24
+ 160 0017 00        		.byte	0
+ 161 0018 0B        		.uleb128 0xb
+ 162 0019 0B        		.uleb128 0xb
+ 163 001a 3E        		.uleb128 0x3e
+ 164 001b 0B        		.uleb128 0xb
+ 165 001c 03        		.uleb128 0x3
+ 166 001d 0E        		.uleb128 0xe
+ 167 001e 00        		.byte	0
+ 168 001f 00        		.byte	0
+ 169 0020 03        		.uleb128 0x3
+ 170 0021 16        		.uleb128 0x16
+ 171 0022 00        		.byte	0
+ 172 0023 03        		.uleb128 0x3
+ 173 0024 0E        		.uleb128 0xe
+ 174 0025 3A        		.uleb128 0x3a
+ 175 0026 0B        		.uleb128 0xb
+ 176 0027 3B        		.uleb128 0x3b
+ 177 0028 0B        		.uleb128 0xb
+ 178 0029 49        		.uleb128 0x49
+ 179 002a 13        		.uleb128 0x13
+ 180 002b 00        		.byte	0
+ 181 002c 00        		.byte	0
+ 182 002d 04        		.uleb128 0x4
+GAS LISTING C:\Users\Dale\AppData\Local\Temp\ccg5jc7b.s 			page 6
+
+
+ 183 002e 24        		.uleb128 0x24
+ 184 002f 00        		.byte	0
+ 185 0030 0B        		.uleb128 0xb
+ 186 0031 0B        		.uleb128 0xb
+ 187 0032 3E        		.uleb128 0x3e
+ 188 0033 0B        		.uleb128 0xb
+ 189 0034 03        		.uleb128 0x3
+ 190 0035 08        		.uleb128 0x8
+ 191 0036 00        		.byte	0
+ 192 0037 00        		.byte	0
+ 193 0038 05        		.uleb128 0x5
+ 194 0039 2E        		.uleb128 0x2e
+ 195 003a 00        		.byte	0
+ 196 003b 3F        		.uleb128 0x3f
+ 197 003c 0C        		.uleb128 0xc
+ 198 003d 03        		.uleb128 0x3
+ 199 003e 0E        		.uleb128 0xe
+ 200 003f 3A        		.uleb128 0x3a
+ 201 0040 0B        		.uleb128 0xb
+ 202 0041 3B        		.uleb128 0x3b
+ 203 0042 0B        		.uleb128 0xb
+ 204 0043 27        		.uleb128 0x27
+ 205 0044 0C        		.uleb128 0xc
+ 206 0045 49        		.uleb128 0x49
+ 207 0046 13        		.uleb128 0x13
+ 208 0047 11        		.uleb128 0x11
+ 209 0048 01        		.uleb128 0x1
+ 210 0049 12        		.uleb128 0x12
+ 211 004a 01        		.uleb128 0x1
+ 212 004b 40        		.uleb128 0x40
+ 213 004c 0A        		.uleb128 0xa
+ 214 004d 00        		.byte	0
+ 215 004e 00        		.byte	0
+ 216 004f 00        		.byte	0
+ 217               		.section	.debug_aranges,"",@progbits
+ 218 0000 1C00 0000 		.long	0x1c
+ 219 0004 0200      		.word	0x2
+ 220 0006 0000 0000 		.long	.Ldebug_info0
+ 221 000a 04        		.byte	0x4
+ 222 000b 00        		.byte	0
+ 223 000c 0000      		.word	0
+ 224 000e 0000      		.word	0
+ 225 0010 0000 0000 		.long	.LFB0
+ 226 0014 2600 0000 		.long	.LFE0-.LFB0
+ 227 0018 0000 0000 		.long	0
+ 228 001c 0000 0000 		.long	0
+ 229               		.section	.debug_ranges,"",@progbits
+ 230               	.Ldebug_ranges0:
+ 231 0000 0000 0000 		.long	.LFB0
+ 232 0004 0000 0000 		.long	.LFE0
+ 233 0008 0000 0000 		.long	0
+ 234 000c 0000 0000 		.long	0
+ 235               		.section	.debug_line,"",@progbits
+ 236               	.Ldebug_line0:
+ 237 0000 C700 0000 		.section	.debug_str,"MS",@progbits,1
+ 237      0200 8D00 
+ 237      0000 0201 
+GAS LISTING C:\Users\Dale\AppData\Local\Temp\ccg5jc7b.s 			page 7
+
+
+ 237      FB0E 0A00 
+ 237      0101 0101 
+ 238               	.LASF11:
+ 239 0000 626C 696E 		.string	"blink.c"
+ 239      6B2E 6300 
+ 240               	.LASF1:
+ 241 0008 756E 7369 		.string	"unsigned char"
+ 241      676E 6564 
+ 241      2063 6861 
+ 241      7200 
+ 242               	.LASF4:
+ 243 0016 6C6F 6E67 		.string	"long unsigned int"
+ 243      2075 6E73 
+ 243      6967 6E65 
+ 243      6420 696E 
+ 243      7400 
+ 244               	.LASF7:
+ 245 0028 7368 6F72 		.string	"short unsigned int"
+ 245      7420 756E 
+ 245      7369 676E 
+ 245      6564 2069 
+ 245      6E74 00
+ 246               	.LASF10:
+ 247 003b 474E 5520 		.string	"GNU C 4.6.2"
+ 247      4320 342E 
+ 247      362E 3200 
+ 248               	.LASF14:
+ 249 0047 6D61 696E 		.string	"main"
+ 249      00
+ 250               	.LASF2:
+ 251 004c 756E 7369 		.string	"unsigned int"
+ 251      676E 6564 
+ 251      2069 6E74 
+ 251      00
+ 252               	.LASF6:
+ 253 0059 6C6F 6E67 		.string	"long long unsigned int"
+ 253      206C 6F6E 
+ 253      6720 756E 
+ 253      7369 676E 
+ 253      6564 2069 
+ 254               	.LASF13:
+ 255 0070 7569 6E74 		.string	"uint8_t"
+ 255      385F 7400 
+ 256               	.LASF5:
+ 257 0078 6C6F 6E67 		.string	"long long int"
+ 257      206C 6F6E 
+ 257      6720 696E 
+ 257      7400 
+ 258               	.LASF9:
+ 259 0086 6368 6172 		.string	"char"
+ 259      00
+ 260               	.LASF8:
+ 261 008b 7368 6F72 		.string	"short int"
+ 261      7420 696E 
+ 261      7400 
+ 262               	.LASF3:
+ 263 0095 6C6F 6E67 		.string	"long int"
+GAS LISTING C:\Users\Dale\AppData\Local\Temp\ccg5jc7b.s 			page 8
+
+
+ 263      2069 6E74 
+ 263      00
+ 264               	.LASF12:
+ 265 009e 453A 5C44 		.string	"E:\\Dropbox\\Dales Folder\\Electronics\\PreAmp Controller\\firmware"
+ 265      726F 7062 
+ 265      6F78 5C44 
+ 265      616C 6573 
+ 265      2046 6F6C 
+ 266               	.LASF0:
+ 267 00dd 7369 676E 		.string	"signed char"
+ 267      6564 2063 
+ 267      6861 7200 
+GAS LISTING C:\Users\Dale\AppData\Local\Temp\ccg5jc7b.s 			page 9
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 blink.c
+C:\Users\Dale\AppData\Local\Temp\ccg5jc7b.s:2      *ABS*:0000003f __SREG__
+C:\Users\Dale\AppData\Local\Temp\ccg5jc7b.s:3      *ABS*:0000003e __SP_H__
+C:\Users\Dale\AppData\Local\Temp\ccg5jc7b.s:4      *ABS*:0000003d __SP_L__
+C:\Users\Dale\AppData\Local\Temp\ccg5jc7b.s:5      *ABS*:00000034 __CCP__
+C:\Users\Dale\AppData\Local\Temp\ccg5jc7b.s:6      *ABS*:00000000 __tmp_reg__
+C:\Users\Dale\AppData\Local\Temp\ccg5jc7b.s:7      *ABS*:00000001 __zero_reg__
+C:\Users\Dale\AppData\Local\Temp\ccg5jc7b.s:16     .text.startup:00000000 main
+
+UNDEFINED SYMBOLS
+__do_copy_data
+__do_clear_bss
+timerInit
+timerPause
